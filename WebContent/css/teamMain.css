@@ -1,0 +1,124 @@
+@CHARSET "UTF-8";
+
+/* ##### teamMain 패키지 공통 */
+
+
+#team-main-title {
+	height: 80px;
+	/* border: 1px solid red; */
+	padding: 45px 25px 5px 42px;
+	font-size: 20pt;
+}
+
+#team-main-flame {
+	float:left;
+	/* border: 1px solid red; */
+	border-left: 1px solid black;
+			
+			
+}
+#team-main {
+	width: 100%;
+	/* border: 1px solid blue;	 */
+	max-width: 963px;
+	min-height: 716px;
+	display: block;	
+	overflow: hidden;
+	margin: 0px 0px 0px 20px;	
+}
+
+#team-main-body, #team-business-body {
+	width: 813px;
+	margin: 0px 60px 0px 60px;
+	/* height: 699px; */	
+	border: 1px solid gray;
+	border-radius : 20px;
+	/* padding: 30px 70px 30px 30px; */
+	overflow: hidden;			
+}
+
+/* ##### teamMain.jsp  */
+
+#team-main-header {		
+	width: 100%;
+	margin: 0px 0px 5px 0px;
+	height: 90px;	
+	/* border-bottom: 1px solid gray; */
+	padding: 30px 70px 30px 30px;
+}
+
+#team-bp-graph-flame {
+	width: 85%;
+	height: 30px;
+	border: 1px solid black;
+	display: inline-block;
+	border-radius : 10px;
+	box-shadow : 1px 1px 2px black;
+	padding: 0px 0px;
+	overflow: hidden;	
+}
+
+#team-bp-graph {
+	margin: 0;			
+	height: 29px;
+	width: 0%;		
+	display: inline-block;		
+	background-color:skyblue; 	
+}		
+
+.team-header-content {
+	width: 15%;
+	height: 30px;
+	font-size: 15pt;
+	float: left;
+	/* border: 1px solid red; */
+	text-align: center;
+	padding-top: 5px;				
+}	
+
+#team-table { 
+	width: 811px;				
+	/* height: 698px; */
+	/* border: 1px solid red;	 */	
+	/* background-color: yellow; */	
+}
+
+#team-table tr {
+	border-bottom: 1px solid gray;
+}
+
+#team-table tr:last-child {
+	border-bottom: 0px;
+}
+
+#team-table th {
+	/* width: 80px; */
+	height: 50px;	
+	text-align: center;		
+}
+ 	
+.td-graph-flame {
+	width: 80%;
+	height: 50%;
+	border: 1px solid black;
+	margin: 0px auto;
+	border-radius: 5px;	
+	overflow: hidden;	
+}
+
+.td-graph {
+	width: 0%;
+	height: 100%;
+	background-color: pink;	
+}
+
+#team-main-button {		
+	text-align:right;
+	margin: 40px 70px 40px 40px;
+}
+
+/* ##### teamBusiness */
+
+#team-business-body {
+	margin-top: 30px;		
+}

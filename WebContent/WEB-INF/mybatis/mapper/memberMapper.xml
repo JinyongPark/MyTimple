@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC
+"-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="member">
+
+	<select id="emailCheck" parameterType="String" resultType="Integer">
+		select count(*)
+		from   member
+		where  email = #{email}
+	</select>
+	
+	<select id="socialEmailCheck" parameterType="MemberDTO" resultType="Integer">
+		select count(*)
+		from   member
+		where  email = #{email} and socialType = #{socialType}
+	</select>
+
+	<select id="login" parameterType="java.util.HashMap" resultType="MemberDTO">
+		select memberid, name, profile AS fileName
+		from   member
+		where  email = #{email} and pw = password(#{pw})
+	</select>
+	
+	<select id="getOneCategory" resultType="String">
+		select onename
+		from   onecategory
+	</select>
+	
+	<select id="getTwoCategory" parameterType="int" resultType="TwoCategoryDTO">
+		select twocategoryid, twoname
+		from   twocategory
+		where  onecategoryseq = #{onecategoryseq}
+	</select>
+	
+	<select id="getQuestion" resultType="String">
+		select content
+		from   question
+	</select>
+	
+	<select id="getMemQuestion" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select     m.memberid, q.content
+		from       member m
+		inner join memquestion mq on m.memberid = mq.memseq
+		inner join question q on mq.questionSeq = q.questionid
+		where      m.name = #{name} and m.email = #{email}
+	</select>
+	
+	<select id="quereplyCheck" parameterType="java.util.HashMap" resultType="Integer">
+		select count(*) from memquestion
+		where  memseq = #{memberid} and quereply = #{quereply}
+	</select>
+	
+	<update id="resetPw" parameterType="java.util.HashMap">
+		update member
+		set    pw = password(#{newPw})
+		where  memberid = #{memberid}
+	</update>
+	
+	<insert id="addMember" parameterType="MemberDTO">
+		insert into member (
+			memberid,
+			name,
+			email,
+			pw,
+			inform
+		) values (
+			null,
+			#{name},
+			#{email},
+			password(#{pw}),
+			#{inform}
+		)
+	</insert>
+	
+	<insert id="addSocialMember" parameterType="MemberDTO">
+		insert into member (
+			memberid,
+			name,
+			email,
+			socialType
+		) values (
+			null,
+			#{name},
+			#{email},
+			#{socialType}
+		)
+	</insert>
+	
+	<insert id="addMemQuestion" parameterType="java.util.HashMap">
+		insert into memquestion (
+			memquestionid,
+			memseq,
+			questionseq,
+			quereply
+		) values (
+			null,
+			#{memseq},
+			#{questionId},
+			#{quereply}
+		)
+	</insert>
+	
+	<select id="getMemberId" parameterType="String" resultType="Integer">
+		select memberid
+		from   member
+		where  email = #{email}
+	</select>
+	
+	<select id="getMemberIdWithSocial" parameterType="java.util.HashMap" resultType="Integer">
+		select memberid
+		from   member
+		where email = #{email} and socialType= #{socialType}
+	</select>
+	
+	<insert id="sendPaper" parameterType="PaperDTO">
+		insert into paper (
+			paperid,
+			content,
+			sendmemseq,
+			receivememseq,
+			kind
+		) values (
+			null,
+			#{content},
+			#{sendMemSeq},
+			#{receiveMemSeq},
+			#{kind}
+		)
+	</insert>
+	
+	<select id="getPaperId" resultType="Integer">
+		select last_insert_id()
+	</select>
+	
+	<insert id="addAcceptance" parameterType="Integer">
+		insert into acceptance (
+			acceptanceid,
+			paperseq,
+			accept
+		) values (
+			null,
+			#{paperseq},
+			0
+		)
+	</insert>
+	
+	<select id="getMemberInfo" parameterType="Integer" resultType="EditMemberDTO">
+		select 	   m.email, m.name, mq.questionSeq, mq.quereply, m.tel, t.oneCategorySeq, t.twocategoryid, o.career 
+		from 	   member m
+		inner join memquestion mq on m.memberId = mq.memquestionId
+		inner join occupation o on m.memberId = o.memSeq
+		inner join twocategory t on o.twoCategorySeq = t.twoCategoryId
+		where      m.memberId = #{memberId}
+	</select>
+	
+	<update id="editMember" parameterType="MemberDTO">
+		update member
+		set    email = #{email},
+			   name = #{name},
+			   pw = password(#{pw}),
+			   tel = #{tel},
+			   profile = #{fileName}
+		where  memberId = #{memberId}
+	</update>
+	
+	<update id="editMemQuestion" parameterType="java.util.HashMap">
+		update memquestion
+		set    questionseq = #{questionSeq},
+		 	   quereply = #{quereply}
+		where  memseq = #{memSeq}
+	</update>
+	
+	<update id="editOccupation" parameterType="java.util.HashMap">
+		update occupation
+		set    twocategoryseq = #{twoCategorySeq},
+			   career = #{career}
+		where  memseq = #{memSeq}
+	</update>
+	
+	<select id="adminLogin" parameterType="java.util.HashMap" resultType="Integer">
+		select count(*)
+		from   manager
+		where  id = #{id} and pw = #{pw}
+	</select>
+	
+</mapper>

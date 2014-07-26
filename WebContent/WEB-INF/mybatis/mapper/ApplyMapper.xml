@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC
+"-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="applymember">
+	<select id="view" resultType="visang.timple.model.ApplyDTO">
+		select m.memberid as aseq, m.name as aname, m.email as aemail, m.tel as atel, o.career as acareer, a.acceptanceid from member m inner join paper p on m.memberid = p.sendmemseq inner join acceptance a on a.paperseq = p.paperid inner join occupation o on o.memseq = m.memberid where p.projectid=#{seq} and a.accept = 1;
+	</select>
+	
+	<insert id="add" parameterType="java.util.HashMap">
+		insert into team values(null, #{seq}, #{mseq}, 2, 1)
+	</insert>
+	
+	<update id="addok" parameterType="String">
+		update acceptance set accept = 2 where acceptanceid=#{accptanceid}
+	</update>
+	
+	<update id="reject" parameterType="String">
+		update acceptance set accept = 3 where acceptanceid=#{accptanceid}
+	</update>
+	
+	<select id="result" resultType="visang.timple.model.MemberDTO">
+		select m.memberid as memberId, m.name as name, m.email as email from member m where m.memberid NOT IN (select memseq from team where projectseq = #{seq}) and m.memberid != 0 and name = #{name};
+	</select>
+	
+	<!-- 초대메세지 보내기 -->
+	<insert id="invite" parameterType="java.util.HashMap">
+		insert into paper values(null, '저희 프로젝트에 당신을 초대합니다.', now(), #{sseq}, #{rseq}, 4, #{seq})
+	</insert>
+	
+	<!-- 초대메세지 seq 가져오기 -->
+	<select id="seq" resultType="String">
+		select paperid from(select @num:=@num+1 num, paperid from (select @num:=0)a, paper order by paperid desc)b where num=1	
+	</select>
+	
+	<!-- 초대메세지의 수락여부 추가하기 -->
+	<insert id="accept" parameterType="String">
+		insert into acceptance values(null, #{pseq}, 1)
+	</insert>
+</mapper>

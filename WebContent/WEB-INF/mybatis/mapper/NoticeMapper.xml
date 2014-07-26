@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC
+"-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Notice">
+	
+	<!-- 게시판 리스트 -->
+	<select id="getList" parameterType="java.util.HashMap" resultType="visang.timple.model.NoticeDTO">
+	<![CDATA[
+		select * from (select (@ROWNUM := @ROWNUM + 1) as rowNum, noticeId, managerSeq, subject, content, date_format(regDate, '%Y-%m-%d') as regDate, id from (select @ROWNUM := 0) rowNUM, notice n inner join manager m on n.managerSeq = m.managerId) as s
+		where rowNum >= #{start} and rowNUM <= #{end} order by noticeId desc;
+	]]>
+	</select>
+	
+	<!-- 페이징 : 페이지 바 -->
+	<select id="pList" parameterType="Integer" resultType="visang.timple.model.NoticeDTO">
+		select count(*) as total, ceil(count(*) / #{pageSize}) as pages from notice;
+	</select>
+	
+	<!-- 게시판 뷰 화면 -->
+	<select id="getView" parameterType="String" resultType="visang.timple.model.NoticeDTO">
+		select * from notice n inner join manager m on n.managerSeq = m.managerId where noticeId = #{noticeId};
+	</select>
+	
+	<!-- 게시판 글쓰기 -->
+	<select id="nInsert" parameterType="java.util.HashMap">
+		insert into notice(noticeId, managerSeq, subject, content, regDate) value(null, '1', #{subject}, #{content}, now());
+	</select>
+	
+	<!-- 게시판 글삭제 -->
+	<select id="nDel" parameterType="String">
+		delete from notice where noticeId = #{noticeId};
+	</select>
+	
+	<!-- 글 수정 : 내용 불러오기 -->	
+	<select id="nUpdateSel" parameterType="java.util.HashMap" resultType="visang.timple.model.NoticeDTO">
+		select * from notice where noticeId =  #{noticeId};
+	</select>
+	
+	<!-- 글 수정 -->
+	<select id="nUpdate" parameterType="java.util.HashMap">
+		update notice set subject = #{subject}, content = #{content} where noticeId = #{noticeId};
+	</select>
+	
+	<!-- 전체검색  -->
+	<select id="searchAll" parameterType="java.util.HashMap" resultType="visang.timple.model.NoticeDTO">
+		<![CDATA[
+			select * from (select (@rowNum := @rowNum + 1) as rowNum, noticeId, managerSeq, subject, content,
+			date_format(regDate, '%Y-%m-%d') as regDate, id, pw from (select @rowNum := 0) as r, notice n inner join manager m on n.managerSeq = m.managerId
+			where (subject like concat('%', #{content}, '%') or content like concat('%', #{content}, '%')) order by noticeId desc) as s
+			where rowNum >= #{start} and rowNum <= #{end} order by noticeId desc;
+		]]>	
+	</select>
+	
+	<!-- 제목검색 -->
+	<select id="searchSubject" parameterType="java.util.HashMap" resultType="visang.timple.model.NoticeDTO">
+		<![CDATA[
+			select * from (select (@rowNum := @rowNum + 1) as rowNum, noticeId, managerSeq, subject, content,
+			date_format(regDate, '%Y-%m-%d') as regDate, id, pw from (select @rowNum := 0) as r, notice n inner join manager m on n.managerSeq = m.managerId
+			where subject like concat('%', #{content}, '%') order by noticeId desc) as s
+			where rowNum >= #{start} and rowNum <= #{end} order by noticeId desc;
+		]]>	
+	</select>
+	
+	<!-- 내용검색 -->
+	<select id="searchContent" parameterType="java.util.HashMap" resultType="visang.timple.model.NoticeDTO">
+		<![CDATA[
+			select * from (select (@rowNum := @rowNum + 1) as rowNum, noticeId, managerSeq, subject, content,
+			date_format(regDate, '%Y-%m-%d') as regDate, id, pw from (select @rowNum := 0) as r, notice n inner join manager m on n.managerSeq = m.managerId
+			where content like concat('%', #{content}, '%') order by noticeId desc) as s
+			where rowNum >= #{start} and rowNum <= #{end} order by noticeId desc;
+		]]>	
+	</select>
+	
+	<!-- 전체알림 -->
+	<select id="allNotiList" parameterType="Integer" resultType="visang.timple.model.NotiListDTO">
+		SELECT * FROM notification WHERE memseq = #{memberId};
+	</select>
+</mapper>
+
+
+
+
+
+
+
+
+

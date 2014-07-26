@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC
+"-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+
+<mapper namespace="pro">
+
+	<select id="list" parameterType="Integer" resultType="visang.timple.model.ProjectListDTO">
+	
+    select     c.projectid, c.name as projectName, a.name, c.startday, c.endday, c.thumnail ,c.twoseq, c.content, a.memberid
+	from       member a 
+	inner join team b on a.memberId = b.memseq 
+	inner join project c on b.projectseq= c.projectid
+	where      b.grade=1 and c.open='y'
+	order by   projectid desc
+	limit      #{page}, 12
+
+
+	</select>
+
+
+
+
+	<select id="search" resultType="visang.timple.model.ProjectListDTO" parameterType="String">
+		
+	 select c.name as projectName , a.name,  c.startday, c.endday, c.thumnail, c.twoseq, c.content, a.memberid
+	 from member a 
+	 inner join team b on a.memberId = b.memseq 
+	 inner join project c on b.projectseq= c.projectid 
+	 where b.grade=1 and c.open='y' and c.name like CONCAT('%', #{search}, '%')
+	 	
+		
+	</select>
+
+
+
+
+	<select id="detail" resultType="visang.timple.model.ProjectListDTO" parameterType="Integer">
+		
+		
+    select c.name as projectName, a.name, c.startday, c.endday, c.thumnail ,c.content, c.twoseq, a.memberid
+	from member a 
+	inner join team b on a.memberId = b.memseq 
+	inner join project c on b.projectseq= c.projectid 
+	where b.grade=1 and c.open='y' and c.projectid = #{projectid}
+
+
+   </select>
+
+
+	<select id="teamcnt" resultType="Integer" parameterType="Integer">
+		
+     select Count(*) as teamcnt 
+     from team a 
+     inner join project b on a.projectseq = b.projectid 
+     where b.projectid = #{projectid}
+
+    </select>
+
+
+    <insert id="paperadd" parameterType="visang.timple.model.ProjectPaperDTO">
+    
+    
+        insert into paper (paperid, content, regdate , sendmemseq, receivememseq, kind , projectid) 
+        values ( null, #{content}, default, #{sendmemseq}, #{receivememseq}, #{kind} , #{projectid} )
+
+	</insert>
+
+
+
+	<select id="paperid"  resultType="Integer"  >
+		
+		
+    select last_insert_id()
+		
+		
+    </select>
+
+
+
+
+
+    <insert id="acceptance" parameterType="Integer">
+    
+    
+    insert into acceptance( acceptanceid, paperseq, accept) values ( null, #{paperid}, '1' )
+    
+    
+	</insert>
+
+
+
+
+
+
+
+	<select id="calendar" resultType="visang.timple.model.ProjectCalendarDTO" parameterType="java.util.HashMap"   >
+		
+	select  b.projectseq , c.name , e.subject , e.startday, e.endday from member  a  inner join  team b on a.memberId = b.memseq inner join project c on b.projectseq= c. projectid inner join teamcalendar d on c.projectid = d.teamseq inner join calendar e on d.calendarseq = e.calendarid where a.memberid=#{loginseq}   
+	
+		
+	</select>
+
+
+
+
+
+
+	<select id="namelist" resultType="visang.timple.model.ProjectCalendarDTO" parameterType="java.util.HashMap"   >
+		
+	
+    select b.projectseq, c.name from member  a  inner join  team b on a.memberId = b.memseq inner join project c on b.projectseq= c. projectid inner join teamcalendar d on c.projectid = d.teamseq inner join calendar e on d.calendarseq = e.calendarid where a.memberid=#{loginseq} group by c.name order by c.projectid;   
+	
+
+	</select>
+
+
+
+
+
+	<select id="oneprojectlist" resultType="visang.timple.model.ProjectCalendarDTO" parameterType="java.util.HashMap"   >
+		
+	
+   	select  b.projectseq , c.name , e.subject , e.startday, e.endday , b.grade from member  a  inner join  team b on a.memberId = b.memseq inner join project c on b.projectseq= c. projectid inner join teamcalendar d on c.projectid = d.teamseq inner join calendar e on d.calendarseq = e.calendarid where a.memberid=#{loginseq} and b.projectseq=#{projectseq}   
+	
+
+	</select>
+
+
+
+
+
+
+
+
+   <insert id="calendarinsert" parameterType="visang.timple.model.ProjectCalendarDTO">
+    
+    
+      insert into calendar (calendarid, subject, content, startday, endday, color) values(null, #{subject}, " ", #{startday}, #{endday}, 'blue'  ) 
+       
+       
+	</insert>
+
+
+
+
+     <select id="calendarid"  resultType="Integer"  >
+		
+		
+     select max(calendarid) from calendar
+		
+		
+     </select>
+
+
+
+
+
+
+    <insert id="teamcalendarinsert" parameterType="java.util.HashMap">
+    
+    
+    insert into teamcalendar values ( null,  #{teamseq}, #{cdrid}  )
+    
+    
+	</insert>
+
+
+
+
+
+     <select id="getcalendarid"  resultType="Integer"   parameterType="java.util.HashMap">
+		
+
+    
+     select min(calendarid) as cnt from calendar a inner join teamcalendar b  on a.calendarid = b.calendarseq inner join project c on b.teamseq = c.projectid where a.startday like CONCAT('%', #{deleteday}, '%') and c.projectid= #{projectseq}
+
+    
+    
+     </select>
+
+
+
+
+
+
+
+
+     <select id="getteamcalendarid"  resultType="Integer"   parameterType="java.util.HashMap">
+		
+
+
+       select teamcalendarid from teamcalendar where teamseq =#{projectseq} and calendarseq =#{calseq};
+    
+    
+    
+     </select>
+
+
+
+
+
+
+     <delete id="deleteteamcalseq"   parameterType="java.util.HashMap"      >
+     
+     
+     
+         delete from teamcalendar where teamcalendarid= #{teamcalseq}
+
+     
+     </delete>
+
+
+
+
+
+
+     <delete id="deletecalseq"   parameterType="java.util.HashMap"      >
+     
+         delete from calendar where calendarid = #{calseq}
+     
+     </delete>
+
+
+
+
+
+
+
+
+</mapper>
+
+
+
+
+
+
+
+

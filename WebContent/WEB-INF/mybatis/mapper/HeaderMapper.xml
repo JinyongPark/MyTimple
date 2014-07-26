@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC
+"-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="header">
+	
+	<select id="getMyProject" resultType="ProjectMemberDTO" parameterType="Integer">
+		SELECT * FROM projectMember WHERE memberId = #{memberId}
+	</select>
+		
+	<select id="getMember" resultType="MemberDTO" parameterType="Integer">
+		SELECT * FROM member WHERE memberId = #{memberId}
+	</select>
+
+	<select id="getFriendList" resultType="FriendsListDTO" parameterType="Integer">
+		SELECT * FROM friendsList WHERE memberId = #{memberId}
+	</select>
+	
+	<select id="getPaperList" resultType="PaperListDTO" parameterType="Integer">
+		SELECT * FROM paperList WHERE toId = #{memberId}
+	</select>
+	<select id="getNotiList" resultType="NotiListDTO" parameterType="Integer">
+		SELECT * FROM notification WHERE memseq = #{memberId} AND confirm = 'n';
+	</select>
+	<select id="getMemoList" resultType="visang.timple.model.MemoDTO" parameterType="Integer">
+		SELECT * FROM memo WHERE memseq = #{memberId}
+	</select>
+	<update id="updateNoti" parameterType="Integer">
+		UPDATE notification SET confirm = 'y' WHERE notificationid = #{notificationId}
+	</update>
+	<delete id="unfriend" parameterType="java.util.HashMap">
+		DELETE FROM friend WHERE memseq = #{memseq} AND friendseq = #{friendseq};
+	</delete>
+	<select id="getPaperListAtNoti" resultType="PaperListDTO" parameterType="Integer">
+		SELECT * FROM paperList WHERE (kind = 2 OR kind = 3) AND toId = #{memberId} AND accept = 1;
+	</select>
+	<insert id="addFriend1" parameterType="java.util.HashMap">
+		INSERT INTO friend VALUES (null, #{toId}, #{fromId})
+	</insert>
+	<insert id="addFriend2" parameterType="java.util.HashMap">
+		INSERT INTO friend VALUES (null, #{fromId}, #{toId})
+	</insert>
+	<insert id="addFriendReject" parameterType="java.util.HashMap">
+		INSERT INTO notification VALUES (null, #{fromId}, '친구 신청거절', 'n')
+	</insert>
+	<update id="addFriendAcceptUpdate" parameterType="java.util.HashMap">
+		UPDATE acceptance SET accept = 2 WHERE paperseq = #{paperid}
+	</update>
+	<update id="addFriendRejectUpdate" parameterType="java.util.HashMap">
+		UPDATE acceptance SET accept = 3 WHERE paperseq = #{paperid}
+	</update>
+</mapper>
+
+
+
+
+
+
+
+
+

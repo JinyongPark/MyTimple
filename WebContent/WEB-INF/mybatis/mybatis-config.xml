@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "HTTP://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+	<settings>
+		<setting name="cacheEnabled" value="false" />
+		<setting name="useGeneratedKeys" value="true" />
+		<setting name="defaultExecutorType" value="REUSE" />
+	</settings>
+
+	<typeAliases>
+		<typeAlias type="visang.timple.model.BbsDTO" alias="BbsDTO" />
+		
+		<typeAlias type="visang.timple.model.MemberDTO" alias="MemberDTO" />
+		<typeAlias type="visang.timple.model.PaperDTO" alias="PaperDTO" />
+		<typeAlias type="visang.timple.model.EditMemberDTO" alias="EditMemberDTO" />
+		<typeAlias type="visang.timple.model.TwoCategoryDTO" alias="TwoCategoryDTO" />
+		
+		<typeAlias type="visang.timple.model.FriendsListDTO" alias="FriendsListDTO" />
+		<typeAlias type="visang.timple.model.ProjectMemberDTO" alias="ProjectMemberDTO" />
+		<typeAlias type="visang.timple.model.PaperListDTO" alias="PaperListDTO" />
+		<typeAlias type="visang.timple.model.NotiListDTO" alias="NotiListDTO" />
+		
+		<typeAlias type="visang.timple.model.JobDTO" alias="JobDTO" />
+		<typeAlias type="visang.timple.model.TeamMainDTO" alias="TeamMainDTO" />
+		<typeAlias type="visang.timple.model.TeamBusinessDTO" alias="TeamBusinessDTO" />
+		<typeAlias type="visang.timple.model.TeamBusinessDataDTO" alias="TeamBusinessDataDTO" />
+				
+	</typeAliases>
+	
+</configuration>
+

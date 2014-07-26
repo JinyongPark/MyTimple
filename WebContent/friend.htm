@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>친구 추가 : TIMPLE</title>
+		<link rel="stylesheet" href="css/timple.css" />
+		<link rel="stylesheet" href="css/common.css" />
+		<script src="js/vendor/modernizr.js"></script>
+		<style>
+			#content { margin-top: 5px; }
+		</style>
+	</head>
+<body id="w-popup">
+
+	<h5>친구 추가</h5>
+	<h5><small><span id="friendName"></span>님이 회원님이 친구임을 확인해야 합니다.</small></h5>
+	<form id="addFriendForm" action="/sendPaper.vs" method="post">
+		<div class="input-wrap">
+			<input type="text" name="content" id="content" placeholder="친구 추가 요청 메시지를 입력해주세요." autofocus />
+		</div>
+		<input class="button tiny" type="submit" value="요청 보내기" />
+		<input class="button tiny secondary" type="button" value="취소" onclick="javascript:window.close();" />
+		<input type="hidden" name="kind" value="3" />
+	</form>
+	
+	
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+	<script src="js/foundation.min.js"></script>
+	<script src="js/timple.js"></script>
+	<script>
+	
+		/* Onload script start */
+		var $content = $('#content');
+		var $addFriendForm = $('#addFriendForm');
+		var $who = $('.mb-name.sel', opener.document);
+		var $hidden = $('<input/>', {
+			type: 'hidden',
+			name: 'receiveMemSeq', 
+			value: $who.attr('id').replace('m', '')
+		}).appendTo($addFriendForm);
+
+		$('#friendName').text($who.text());	
+		/* Onload script end */
+		
+	
+		$content.on('input', function() {
+			if ($(this).val() != "") $(this).removeWarning('empty');
+		});
+		
+		$addFriendForm.submit(function(e) {
+			
+			e.preventDefault();
+			console.log('????');
+			if ($content.val() == "") $content.showWarning('empty').focus();
+			else this.submit();
+		});
+	</script>
+</body>
+</html>

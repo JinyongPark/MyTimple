@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC
+"-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="business">
+	<insert id="add" parameterType="visang.timple.model.PlanDTO">
+		insert into bp (bpid, projectseq, name, startday, endday, explanation, state) values (null, #{projectseq}, #{name}, #{startday}, #{endday}, #{explanation}, '진행중')
+	</insert>
+	
+	<select id="name" resultType="visang.timple.model.PlanDTO"   parameterType="String" >
+		select name, bpid from bp where projectseq = #{seq}
+	</select>
+</mapper>
+
+

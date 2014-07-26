@@ -1,0 +1,8 @@
+1.필기.txt
+
+웹서버
+- 웹브라우저 요청(URL)을 받아서, 해당 페이지를 돌려주는 작업
+-아파치(Apache), IIS 등..
+-웹브라우저 역할 : HTML/CSS/JavaScript/Jquery 실행
+-웹서버 역할 : Java(JSP/Servlet/Spring)실행
+

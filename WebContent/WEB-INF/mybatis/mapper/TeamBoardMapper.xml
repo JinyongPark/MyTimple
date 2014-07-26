@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC
+"-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="TeamBoard">
+
+	<select id="getlist" resultType="visang.timple.model.TeamBoardDTO">
+		select teamboardId, subject, content, teamseq, date_format(regdate, '%y-%m-%d') as regdate, readCount, fileName, orgFileName, theme, teamBoardSortSeq, teamBoardGrade from teamboard
+	</select>
+	
+	<select id="page" resultType="visang.timple.model.TeamBoardDTO" parameterType="Integer">
+		select count(*) as total, ceil(count(*) / #{pages}) as pages from teamboard;
+	</select>
+
+	<select id="paging" resultType="visang.timple.model.TeamBoardDTO" parameterType="Integer">
+		select m.name, b.teamboardId, b.subject, b.content, b.teamseq, date_format(b.regdate, '%y-%m-%d') as regdate, b.readCount, b.fileName, b.orgFileName, b.theme, b.teamBoardSortSeq, b.teamBoardGrade from team t
+ inner join member m on m.memberid = t.memseq
+  inner join teamboard b on t.teamid = b.teamseq
+	where t.projectseq = #{projectseq} and b.teamboardsortseq = #{teamBoardSortSeq} order by b.regdate desc limit #{start},#{pageSize}
+	</select>
+	
+	<select id="list1" resultType="visang.timple.model.TeamBoardSortDTO" parameterType="Integer">
+		select * from teamboardsort where projectseq = #{projectseq}
+	</select>
+	
+	<select id="insert" parameterType="visang.timple.model.TeamBoardDTO">
+		INSERT INTO teamboard(TEAMBOARDID, SUBJECT, content, teamseq, regdate,readcount ,filename, orgfilename, theme, teamboardsortseq, teamboardgrade)
+VALUES(null, #{subject}, #{content}, #{teamseq}, now(), 0,#{fileName}, #{orgFileName}, 1 ,#{teamBoardSortSeq}, #{teamBoardGrade} )
+	</select>
+	
+	<select id="list2" resultType="visang.timple.model.TeamBoardDTO" parameterType="Integer">
+		select teamboardId, subject, content, teamseq, date_format(regdate, '%y-%m-%d') as regdate, readCount, fileName, orgFileName, theme, teamBoardSortSeq, teamBoardGrade from teamboard where teamboardId = #{teamboardId}
+	</select>
+	
+	<select id="searchlist1" resultType="visang.timple.model.TeamBoardDTO" parameterType="Object">
+		select m.name, b.teamboardId, b.subject, b.content, b.teamseq, date_format(b.regdate, '%y-%m-%d') as regdate, b.readCount, b.fileName, b.orgFileName, b.theme, b.teamBoardSortSeq, b.teamBoardGrade from team t
+ inner join member m on m.memberid = t.memseq
+  inner join teamboard b on t.teamid = b.teamseq
+	where b.subject like concat('%', #{word}, '%') or b.content like concat('%', #{word}, '%') 
+	order by b.regdate desc limit #{start},#{pageSize};
+	</select>
+	
+	<select id="searchlist2" resultType="visang.timple.model.TeamBoardDTO" parameterType="Object">
+		select m.name, b.teamboardId, b.subject, b.content, b.teamseq, date_format(b.regdate, '%y-%m-%d') as regdate, b.readCount, b.fileName, b.orgFileName, b.theme, b.teamBoardSortSeq, b.teamBoardGrade from team t
+ inner join member m on m.memberid = t.memseq
+  inner join teamboard b on t.teamid = b.teamseq 
+  	where b.content like concat('%', #{word}, '%') order by b.regdate desc limit #{start},#{pageSize}
+	</select> 
+	
+	<select id="searchlist3" resultType="visang.timple.model.TeamBoardDTO" parameterType="Object">
+		select m.name, b.teamboardId, b.subject, b.content, b.teamseq, date_format(b.regdate, '%y-%m-%d') as regdate, b.readCount, b.fileName, b.orgFileName, b.theme, b.teamBoardSortSeq, b.teamBoardGrade from team t
+ inner join member m on m.memberid = t.memseq
+  inner join teamboard b on t.teamid = b.teamseq
+   where b.subject like concat('%', #{word}, '%') order by b.regdate desc limit #{start},#{pageSize}
+	</select>
+	
+	<select id="comment" resultType="visang.timple.model.TeamCommentDTO" parameterType="Integer">
+		select * from teamcomment where teamboardseq = #{TeamBoardSeq}
+	</select>
+	
+	<select id="addcomment" parameterType="visang.timple.model.TeamCommentDTO">
+		INSERT INTO teamcomment(teamcomment, regdate, teamboardseq, teamseq)
+		VALUES(#{teamcomment}, now(), #{teamboardseq}, #{teamboardseq})
+	</select>
+	
+	<select id="edit" parameterType="visang.timple.model.TeamBoardDTO">
+		update teamboard set subject=#{subject}, content=#{content}, teamboardsortseq=#{teamBoardSortSeq}, teamboardgrade=#{teamBoardGrade} where teamboardid = #{teamboardId}
+	</select>
+	
+	<select id="del1" parameterType="Integer" >
+		delete from permission where teamboardseq = #{teamboardId}
+	</select>
+	
+	<select id="del2" parameterType="Integer" >
+		delete from teamcomment where teamboardseq = #{teamboardId}
+	</select>	
+	
+	<select id="del" parameterType="Integer" >
+		delete from teamboard where teamboardid = #{teamboardId}
+	</select>
+	
+	<select id="commentdel" parameterType="Integer">
+		delete from teamcomment where teamcommentId = #{teamcommentId}
+	</select>	
+	
+	<select id="getteamseq" resultType="Integer" parameterType="Object">
+		select teamid from team where memseq = #{memSeq} and projectseq = #{projectseq}
+	</select>
+	
+	<select id="notice" resultType="visang.timple.model.TeamNoticeDTO" parameterType="Integer">
+		select * from teamNotice where memseq = #{teamseq}
+	</select>
+	
+	<select id="notice1" resultType="visang.timple.model.TeamNoticeDTO" parameterType="Integer">
+		select * from teamNotice where noticeid = #{noticeId}
+	</select>
+	
+	<select id="noticeEdit1" parameterType="visang.timple.model.TeamNoticeDTO">
+		update teamNotice set subject=#{subject}, content=#{content}, regdate= now() where noticeId = #{noticeId}
+	</select>
+	
+	<select id="noticeDel" parameterType="Integer">
+		delete from teamNotice where noticeId = #{noticeId}
+	</select>
+	
+	<select id="getgrade" resultType="Integer" parameterType="Integer">
+		select grade from team where teamid = #{teamseq}
+	</select>
+	
+	<select id="getTeamBoardSortName" resultType="String" parameterType="String">
+		select subject from teamboardsort where teamboardsortid = #{TeamBoardSortSeq}
+	</select>
+	
+	<select id="AddTeamNotice" parameterType="Object">
+		insert teamNotice (memseq, subject, content, regdate) values (#{teamseq}, #{subject}, #{content}, now())
+	</select>	
+	
+	<select id="searchlist11" resultType="visang.timple.model.TeamNoticeDTO" parameterType="Object">
+		select n.noticeid, n.memseq, n.subject, n.content, date_format(n.regdate, '%y-%m-%d') as regdate from teamNotice n
+			inner join team t on t.teamid = n.memseq where n.subject like concat('%', #{word}, '%') or n.content like concat('%', #{word}, '%') 
+				order by n.regdate desc limit #{start},#{pageSize}
+	</select>
+	
+	<select id="searchlist12" resultType="visang.timple.model.TeamNoticeDTO" parameterType="Object">
+		select n.noticeid, n.memseq, n.subject, n.content, date_format(n.regdate, '%y-%m-%d') as regdate from teamNotice n
+			inner join team t on t.teamid = n.memseq where n.content like concat('%', #{word}, '%') 
+				order by n.regdate desc limit #{start},#{pageSize}
+	</select>
+	
+	<select id="searchlist13" resultType="visang.timple.model.TeamNoticeDTO" parameterType="Object">
+		select n.noticeid, n.memseq, n.subject, n.content, date_format(n.regdate, '%y-%m-%d') as regdate from teamNotice n
+			inner join team t on t.teamid = n.memseq where n.subject like concat('%', #{word}, '%') 
+				order by n.regdate desc limit #{start},#{pageSize}
+	</select>
+	
+	<select id="TeamNotice" resultType="visang.timple.model.TeamNoticeDTO" parameterType="Object">
+		select n.noticeid, n.memseq, n.subject, n.content, date_format(n.regdate, '%y-%m-%d') as regdate from teamNotice n
+			inner join team t on t.teamid = n.memseq
+				where t.projectseq = #{projectseq} order by n.regdate desc limit #{start},#{pageSize}
+	</select>
+	<select id="NoticeContent" resultType="visang.timple.model.TeamNoticeDTO" parameterType="String">
+		select * from teamNotice where noticeid = #{noticeId}
+	</select>
+	
+	<select id="searchsortseq" parameterType="Object" resultType="String">
+		select teamboardsortid from teamboardsort where projectseq = #{projectseq} and subject = '자유게시판'
+	</select>
+	
+	<select id="madesort" parameterType="Integer">
+		insert teamboardsort (projectseq, subject, sort) values(#{projectseq}, '자유게시판', 1)
+	</select>
+	
+	<select id="getread" resultType="Integer" parameterType="String">
+		select readCount from teamboard where teamboardid = #{teamboardId}
+	</select>
+	
+	<select id="addread" parameterType="Object">
+		update teamboard set readCount = #{addread} where teamboardid = #{teamboardId}
+	</select>
+	
+	<select id="projectname" parameterType="Integer" resultType="String">
+		select name from project where projectid= #{projectseq}
+	</select>
+	
+</mapper>

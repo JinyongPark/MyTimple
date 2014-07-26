@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC
+"-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Paper">
+	<!-- 게시판 리스트 -->
+	<select id="sendPaper" parameterType="java.util.HashMap">
+		INSERT INTO paper VALUES (null, #{content}, NOW(), #{from}, #{to}, 1, null)
+	</select>	
+	
+	<select id="sendPaperList" parameterType="java.util.HashMap" resultType="visang.timple.model.PaperListDTO2">
+		SELECT * FROM (SELECT (@ROWNUM := @ROWNUM+1) AS rowNum, p.paperId, p.content, p.receivememseq, m.memberId AS fromId, m.name AS fromMem, p.regdate FROM (SELECT @ROWNUM := 0) AS r, paper p INNER JOIN member m ON p.sendmemseq = m.memberId INNER JOIN member m1 ON p.receivememseq = m1.memberid WHERE p.receivememseq = #{memberId}) AS s WHERE rowNum <![CDATA[>=]]> #{start} AND rowNum <![CDATA[<=]]> #{end}
+	</select>
+	
+	<select id="paperPageBar" resultType="java.util.HashMap" resultMap="barResult" parameterType="String">
+		SELECT COUNT(*) AS total, CEIL(COUNT(*) / 10) AS pages FROM paper WHERE receivememseq = #{receivememseq};
+	</select>
+	
+	<select id="Del" parameterType="Integer">
+		delete from paper where paperId = #{paperId}
+	</select>
+	
+	<select id="Del1" parameterType="Integer">
+		delete from acceptance where paperseq = #{paperId}
+	</select>
+	
+	<select id="accept" resultType="Integer" parameterType="Integer">
+		SELECT paperseq FROM acceptance WHERE paperseq = #{paperseq}
+	</select>
+	
+	<resultMap type="java.util.HashMap" id="barResult">
+		<result property="pages" column="pages" javaType="Integer"/>
+		<result property="total" column="total" javaType="Integer"/>
+	</resultMap>
+</mapper>
+
+
+
+
+
+
+
+
+

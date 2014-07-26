@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC
+"-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="project">
+	<!-- 프로젝트 생성 Insert 구문 -->
+	<insert id="add" parameterType="visang.timple.model.ProjectDTO">
+		insert into project values(null, #{name}, date_format(#{startday}, '%Y-%m-%d'), date_format(#{endday}, '%Y-%m-%d'), #{content}, #{open}, #{thumnail}, #{twoCategory}, null)
+	</insert>
+	
+	<!-- 신규프로젝트 Seq 호출 구문 -->
+	<select id="seq" resultType="String">
+		select projectid from(select @num:=@num+1 num, projectid from (select @num:=0)a, project order by projectid desc)b where num=1
+	</select>
+	
+	<!-- 프로젝트 생성 시 팀장 등록 구문 -->
+	<insert id="madd" parameterType="visang.timple.model.TeamAddDTO">
+		insert into team (teamid, projectseq, memseq, grade, participation) values(null, #{seq}, #{memseq}, 1, 1)
+	</insert>
+	
+	<!-- 1차직군 가져오기 -->
+	<select id="one" resultType="visang.timple.model.JobDTO">
+		select onecategoryid as 'seq', onename as 'name' from onecategory
+	</select>
+
+	<!-- 2차직군 가져오기 -->
+	<select id="two" resultType="JobDTO" parameterType="String">
+		select twocategoryid as 'seq', twoname as 'name' from twocategory where onecategoryseq = #{oneSeq}
+	</select>
+	
+	<!-- 프로젝트 타이틀 가져오기 -->
+	<select id="title" resultType="String">
+		select name from project where projectid=#{seq}
+	</select>
+	
+	<!-- 프로젝트 전체 업무가져오기 -->
+	<select id="total" resultType="java.lang.Float">
+		select count(*) from(select b.name, bu.subject, s.status from project p inner join bp b on p.projectid = b.projectseq inner join business bu on b.bpid = bu.bpseq inner join businesslog l on bu.businessid = l.businessseq inner join businesstatus s on l.businesstatussseq = s.businesstatusid where p.projectid = #{seq}) c
+	</select>
+	
+	<!-- 프로젝트 완료 업무 가져오기 -->
+	<select id="comple" resultType="java.lang.Float">
+		select count(*) from(select b.name, bu.subject, s.status from project p inner join bp b on p.projectid = b.projectseq inner join business bu on b.bpid = bu.bpseq inner join businesslog l on bu.businessid = l.businessseq inner join businesstatus s on l.businesstatussseq = s.businesstatusid where p.projectid = #{seq} and l.businesstatussseq = 3) c
+	</select>
+	
+	<!-- 오늘의 일정 가져오기 -->
+	<select id="calendar" resultType="visang.timple.model.NowWorkDTO">
+		select c.subject, date_format(c.startday, '%h:%i') as 'startday', date_format(c.endday, '%h:%i') as 'endday' from project p inner join teamcalendar tc on p.projectid = tc.teamseq inner join calendar c on tc.calendarseq = c.calendarid where p.projectid=#{seq} and c.startday=#{nowdate}
+	</select>
+	
+	<!-- 해당 BP 업무가져오기 -->
+	<select id="bptotal" resultType="java.lang.Float">
+		select count(*) from(select b.name, bu.subject, s.status from project p inner join bp b on p.projectid = b.projectseq inner join business bu on b.bpid = bu.bpseq inner join businesslog l on bu.businessid = l.businessseq inner join businesstatus s on l.businesstatussseq = s.businesstatusid where p.projectid = #{seq} and b.bpid = #{bpid}) c
+	</select>
+	
+	<!-- 해당 BP 완료업무가져오기 -->
+	<select id="bpcomple" resultType="java.lang.Float">
+		select count(*) from(select b.name, bu.subject, s.status from project p inner join bp b on p.projectid = b.projectseq inner join business bu on b.bpid = bu.bpseq inner join businesslog l on bu.businessid = l.businessseq inner join businesstatus s on l.businesstatussseq = s.businesstatusid where p.projectid = #{seq} and b.bpid = #{bpid} and l.businesstatussseq = 3) c
+	</select>
+	
+	<!-- BP 리스트와 진행률 가져오기 -->
+	<select id="bp" resultType="visang.timple.model.BpDTO">
+		SELECT bp.name as bname, COUNT(IF(st.status='완료', '', NULL))/COUNT(*) * 100 AS bpercent FROM businesslog l INNER JOIN businesstatus st ON st.businesstatusid = l.businesstatussseq INNER JOIN business b ON b.businessid = l.businessseq INNER JOIN bp ON b.bpseq = bp.bpid INNER JOIN project p ON p.projectid = bp.projectseq WHERE p.projectid = #{seq} GROUP BY b.bpseq;
+	</select>
+	
+	<!-- Overview 가져오기 -->
+	<select id="overview" resultType="visang.timple.model.OverviewDTO">
+		select b.name as bname, bu.subject as buname, date_format(l.editdate, '%Y-%m-%d %H:%i') as editdate from project p inner join bp b on p.projectid = b.projectseq inner join business bu on b.bpid = bu.bpseq inner join businesslog l on bu.businessid = l.businessseq where p.projectid=#{seq} order by editdate desc limit 0,5;
+	</select>
+	
+	<!-- 프로젝트 멤버추가(추대수락) -->
+	<insert id="acceptInvite" parameterType="java.util.HashMap">
+		INSERT INTO team VALUES (null, #{projectid}, #{toId}, 0, 0)
+	</insert>
+	<update id="addAcceptUpdate" parameterType="java.util.HashMap">
+		UPDATE acceptance SET accept = 2 WHERE paperseq = #{paperid}
+	</update>
+	<update id="addRejectUpdate" parameterType="java.util.HashMap">
+		UPDATE acceptance SET accept = 3 WHERE paperseq = #{paperid}
+	</update>
+	<insert id="addReject" parameterType="java.util.HashMap">
+		INSERT INTO notification VALUES (null, #{fromId}, '멤버초대 신청거절', 'n')
+	</insert>
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

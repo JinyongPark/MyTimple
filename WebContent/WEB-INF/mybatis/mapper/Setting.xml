@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC
+"-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Setting">
+	
+	<select id="selectTheme" parameterType="visang.timple.model.ThemeDTO" resultType="String">
+		select skin from project where projectid = #{seq};
+	</select>
+	
+	<select id="selectOrder" parameterType="visang.timple.model.OrderDTO" resultType="visang.timple.model.OrderDTO">
+		select * from setting where projectseq = #{seq};
+	</select>
+	
+	<select id="bpselect" resultType="visang.timple.model.BpDTO">
+		select * from bp where projectseq = #{seq};
+	</select>
+	
+	<select id="proselect" resultType="visang.timple.model.ProjectDTO">
+		select * from project where projectid = #{seq};
+	</select>
+	
+	<select id="selectGrade" resultType="String"  parameterType="java.util.HashMap">
+		select grade from team where grade=1 and memseq=#{mseq} and projectseq=#{seq};
+	</select>
+	
+	<select id="setList" resultType="String"  parameterType="java.util.HashMap">
+		select sidename from setting where projectseq=${seq};
+	</select>
+	
+	<update id="update" parameterType="visang.timple.model.ThemeDTO">
+		update project set skin=#{skin} where projectid = #{seq};
+	</update>
+	
+	<update id="orderupdate" parameterType="java.util.HashMap">
+		update setting set sidename=#{name} where projectseq = 1 and sideorder=#{number};
+	</update>
+	
+	<update id="BpUpdate" parameterType="java.util.HashMap">
+		update bp set name=#{name} where projectseq=1 and bpid=#{bpid};
+	</update>
+	
+	<update id="proupdate" parameterType="java.util.HashMap">
+		update project set name=#{name} where projectid=#{seq};
+	</update>
+	
+	<delete id="business" parameterType="String">
+		delete from business where bpseq=#{bpid}
+	</delete>
+	
+	<delete id="teambp" parameterType="String">
+		delete from teambp where bpseq = #{bpid}
+	</delete>
+	
+	<delete id="Bpdelete" parameterType="String">
+		delete from bp where bpid=#{bpid}
+	</delete>
+	
+</mapper>

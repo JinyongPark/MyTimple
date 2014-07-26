@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC
+"-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="TeamData">
+	<select id="list1" resultType="visang.timple.model.TeamDataDTO" parameterType="Integer">
+		select * from data where projectSeq = #{projectseq} order by regdate desc
+	</select>
+	
+	<select id="insert1" parameterType="visang.timple.model.TeamDataDTO">
+		insert data (filename, orgfilename, fileexplanation, projectseq) values (#{fileName}, #{orgFileName}, #{filexplanation}, #{projectseq})
+	</select>
+	
+	<select id="delete1" parameterType="String">
+		delete from data where dataId = #{dataId}
+	</select>
+	
+	<select id="select1" parameterType="Object" resultType="Object">
+		select dataid from data where orgfilename = #{orgFileName} and projectseq = #{projectseq}
+	</select>
+	
+	<select id="insert2" parameterType="Object">
+		insert filelog (dataseq, editDate, teamseq, filestatusseq) values (#{dataseq}, now(), #{teamseq}, 1)
+	</select>
+	
+	<select id="insert3" parameterType="Object">
+		insert filelog (dataseq, editDate, teamseq, filestatusseq) values (#{dataSeq}, now(), #{teamseq}, 2)
+	</select>
+	
+	<select id="insert4" parameterType="Object">
+		insert filelog (dataseq, editDate, teamseq, filestatusseq) values (#{dataseq}, now(), #{teamseq}, 3)
+	</select>
+		
+</mapper>

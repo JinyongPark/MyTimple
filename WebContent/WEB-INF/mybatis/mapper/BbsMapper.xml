@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC
+"-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Bbs">
+	
+	<!-- 게시판 리스트 -->
+	<select id="getList1" resultType="BbsDTO">
+		select (@ROWNUM := @ROWNUM + 1) as rowNum, boardId, post_type, subject, name, date_format(regDate, '%Y-%m-%d') as regDate, readCount, recomCount 
+		from (select @ROWNUM := 0) rowNum, board b 
+		inner join member m on b.memSeq = m.memberId
+		where b.post_type = '공지' and @rowNum <![CDATA[<]]> 3 order by rowNum desc;
+	</select>
+
+	<select id="getList2" resultType="BbsDTO">
+		select (@ROWNUM :=@ROWNUM +1) as rowNum, boardId, post_type, subject, name, date_format(regDate, '%Y-%m-%d') as regDate, readCount, recomCount , m.memberid
+		from (select @ROWNUM := 0) as rowNum, board b 
+		inner join member m on b.memSeq = m.memberId 
+		where post_type = '자유' and @rowNum <![CDATA[<]]> 3 order by recomCount desc;
+		
+	</select>
+	
+	<select id="getList3" resultType="BbsDTO">
+		select boardId, post_type, subject, name, date_format(regDate, '%Y-%m-%d') as regDate, readCount, recomCount 
+		from board b 
+		inner join member m on b.memseq = m.memberId where post_type = '자유' or post_type = '질문' order by regDate DESC;
+	</select>
+
+	<!-- 페이징 : 페이지 당 출력 리스트 수 -->
+ 	<select id="getList4" parameterType="java.util.HashMap" resultType="BbsDTO">
+		<![CDATA[
+		select * from (select (@rowNum := @rowNum +1) as rowNum, boardId, post_type, subject, 
+		name, date_format(regDate, '%Y-%m-%d') as regDate , readCount, recomCount , m.memberid from (select @rowNum := 0) as r, board b inner join member m on b.memseq = m.memberId where post_type = '질문' or post_type = '자유' order by boardId desc) as s 
+		where rowNum >= #{start} and rowNum <= #{end} order by boardId desc;
+		]]>		
+	</select>
+	
+	<!-- 페이징 : 페이지 바 -->
+	<select id="pList" parameterType="Integer" resultType="BbsDTO">
+		select count(*) as total, ceil(count(*) / #{pageSize}) as pages from board;
+	</select>
+	
+	<!-- 게시판 뷰 화면 -->
+	<select id="getView" parameterType="Integer" resultType="BbsDTO">
+		select boardId, post_type, memSeq, subject, content, date_format(regDate, '%Y-%m-%d %H:%m:%i') as regDate, readCount, recomCount, imgFileName, imgOrgFileName, thread, depth, name, profile 
+ 		from board b 
+ 		inner join member m on b.memseq = m.memberId
+ 		where boardId = #{boardId}
+	</select>
+	
+	<!-- 게시판 댓글 -->
+	<select id="cList" parameterType="Integer" resultType="visang.timple.model.BbsComDTO">
+		select commentId, boardSeq, memSeq, date_format(regDate, '%Y-%m-%d %H:%m:%i') as regDate, content, m.name as name
+		from boardcomment c inner join member m
+		on c.memSeq = m.memberId where boardSeq = #{boardSeq} order by commentId ASC;
+	</select>
+	
+	<!-- 게시판 글쓰기 -->
+	<select id="bInsert" parameterType="java.util.HashMap">
+		insert into board(post_type, memSeq, subject, content, fontNum, regDate, readCount, recomCount, imgFileName, imgOrgFileName, thread, depth)
+		value(#{genreSel}, #{memSeq}, #{subject}, #{content}, 1, now(), 0, 0, null, null, 1000, 1);
+	</select>
+	
+	<!-- 게시판 참조 댓글 삭제 -->
+	<select id="rDel" parameterType="String">
+		delete from boardcomment where boardSeq = #{boardId};
+	</select>
+	
+	<!-- 게시판 글삭제 -->
+	<select id="bDel" parameterType="String">
+		delete from board where boardId = #{boardId};
+	</select>
+	
+	<!-- 게시판 추천 -->
+	<select id="bRecom" parameterType="String">
+		update board set recomCount=recomCount+1 where boardId = #{boardId};
+	</select>
+	
+	<select id="cInsert" parameterType="java.util.HashMap">
+		insert into boardcomment(boardSeq, memSeq, regDate, content) value(#{boardSeq}, #{memSeq}, now(), #{content});
+	</select>
+	
+	<!-- 글 수정 : 내용 불러오기 -->	
+	<select id="bUpdateSel" parameterType="java.util.HashMap" resultType="BbsDTO">
+		select * from board where boardId = #{boardId};
+	</select>
+
+	<!-- 글 수정 -->
+	<select id="bUpdate" parameterType="java.util.HashMap">
+		update board set post_type = #{post_type}, subject = #{subject}, content = #{content} where boardId = #{boardId};
+	</select>
+	
+	<!-- 게시물 검색 : 전체 - 전체검색 -->
+	<select id="searchAll2" parameterType="java.util.HashMap" resultType="BbsDTO">
+	<![CDATA[
+		select * from (select (@rowNum := @rowNum +1) as rowNum, boardId, post_type, subject, 
+		name, date_format(regDate, '%Y-%m-%d') as regDate , readCount, recomCount from (select @rowNum := 0) as r, board b inner join member m on b.memseq = m.memberId 
+		where (subject like concat('%', #{content}, '%')
+		or name like concat('%', #{content}, '%')
+		or content like concat('%', #{content}, '%')) order by boardId desc) as s 
+		where rowNum >= #{start} and rowNum <= #{end} order by boardId desc;
+	]]>	
+	</select>
+	
+	<!-- 게시물 검색 : 전체 - 부분 검색 / 이름 -->
+	<select id="searchName2" parameterType="java.util.HashMap" resultType="BbsDTO">
+	<![CDATA[
+		select * from (select (@rowNum := @rowNum +1) as rowNum, boardId, post_type, subject, content,
+		name, date_format(regDate, '%Y-%m-%d') as regDate , readCount, recomCount from (select @rowNum := 0) as r, board b inner join member m on b.memseq = m.memberId 
+		where name like concat('%', #{content}, '%') order by boardId desc) as s 
+		where rowNum >= #{start} and rowNum <= #{end} order by boardId desc;
+	]]>	
+	</select>
+	
+		<!-- 게시물 검색 : 전체 - 부분 검색 / 제목 -->
+	<select id="searchSubject2" parameterType="java.util.HashMap" resultType="BbsDTO">
+	<![CDATA[
+		select * from (select (@rowNum := @rowNum +1) as rowNum, boardId, post_type, subject, content,
+		name, date_format(regDate, '%Y-%m-%d') as regDate , readCount, recomCount from (select @rowNum := 0) as r, board b inner join member m on b.memseq = m.memberId 
+		where subject like concat('%', #{content}, '%') order by boardId desc) as s 
+		where rowNum >= #{start} and rowNum <= #{end} order by boardId desc;
+	]]>	
+	</select>
+	
+		<!-- 게시물 검색 : 전체 - 부분 검색 / 내용 -->
+	<select id="searchContent2" parameterType="java.util.HashMap" resultType="BbsDTO">
+	<![CDATA[
+		select * from (select (@rowNum := @rowNum +1) as rowNum, boardId, post_type, subject, content,
+		name, date_format(regDate, '%Y-%m-%d') as regDate , readCount, recomCount from (select @rowNum := 0) as r, board b inner join member m on b.memseq = m.memberId 
+		where content like concat('%', #{content}, '%') order by boardId desc) as s 
+		where rowNum >= #{start} and rowNum <= #{end} order by boardId desc;
+	]]>	
+	</select>
+	
+	<!-- 게시물 검색 : 전체검색 -->
+	<select id="searchAll" parameterType="java.util.HashMap" resultType="BbsDTO">
+	<![CDATA[
+		select * from (select (@rowNum := @rowNum +1) as rowNum, boardId, post_type, subject, 
+		name, date_format(regDate, '%Y-%m-%d') as regDate , readCount, recomCount from (select @rowNum := 0) as r, board b inner join member m on b.memseq = m.memberId 
+		where post_type = #{post_type} and (subject like concat('%', #{content}, '%')
+		or name like concat('%', #{content}, '%')
+		or content like concat('%', #{content}, '%')) order by boardId desc) as s 
+		where rowNum >= #{start} and rowNum <= #{end} order by boardId desc;
+	]]>	
+	</select>
+	
+	<!-- 게시물 검색 : 부분 검색 / 이름 -->
+	<select id="searchName" parameterType="java.util.HashMap" resultType="BbsDTO">
+	<![CDATA[
+		select * from (select (@rowNum := @rowNum +1) as rowNum, boardId, post_type, subject, content,
+		name, date_format(regDate, '%Y-%m-%d') as regDate , readCount, recomCount from (select @rowNum := 0) as r, board b inner join member m on b.memseq = m.memberId 
+		where post_type = #{post_type} and name like concat('%', #{content}, '%') order by boardId desc) as s 
+		where rowNum >= #{start} and rowNum <= #{end} order by boardId desc;
+	]]>	
+	</select>
+	
+		<!-- 게시물 검색 : 부분 검색 / 제목 -->
+	<select id="searchSubject" parameterType="java.util.HashMap" resultType="BbsDTO">
+	<![CDATA[
+		select * from (select (@rowNum := @rowNum +1) as rowNum, boardId, post_type, subject, content,
+		name, date_format(regDate, '%Y-%m-%d') as regDate , readCount, recomCount from (select @rowNum := 0) as r, board b inner join member m on b.memseq = m.memberId 
+		where post_type = #{post_type} and subject like concat('%', #{content}, '%') order by boardId desc) as s 
+		where rowNum >= #{start} and rowNum <= #{end} order by boardId desc;
+	]]>	
+	</select>
+	
+		<!-- 게시물 검색 : 부분 검색 / 내용 -->
+	<select id="searchContent" parameterType="java.util.HashMap" resultType="BbsDTO">
+	<![CDATA[
+		select * from (select (@rowNum := @rowNum +1) as rowNum, boardId, post_type, subject, content,
+		name, date_format(regDate, '%Y-%m-%d') as regDate , readCount, recomCount from (select @rowNum := 0) as r, board b inner join member m on b.memseq = m.memberId 
+		where post_type = #{post_type} and content like concat('%', #{content}, '%') order by boardId desc) as s 
+		where rowNum >= #{start} and rowNum <= #{end} order by boardId desc;
+	]]>	
+	</select>
+	
+	<!-- 조회수 업글 -->
+	<select id="bCountUp" parameterType="Integer">
+		update board set readCount = readCount + 1 where boardId = #{boardId} 
+	</select>
+	
+	<!-- 댓글 삭제 -->
+	<select id="bCommentDel" parameterType="java.util.HashMap">
+		delete from boardcomment where boardSeq = #{boardId} and commentId = #{commentId};
+	</select>
+	
+</mapper>
+
+
+
+
+
+
+
+
+

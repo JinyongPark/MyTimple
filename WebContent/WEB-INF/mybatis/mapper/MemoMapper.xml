@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC
+"-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Memo">
+	<!-- 게시판 리스트 -->
+	<select id="MemoList" parameterType="java.util.HashMap" resultType="visang.timple.model.MemoListDTO">
+		SELECT * FROM (SELECT (@ROWNUM := @ROWNUM+1) AS rowNum, memoid, memseq, content FROM (SELECT @ROWNUM := 0) AS r, memo m WHERE m.memseq = #{memberId}) AS s WHERE rowNum <![CDATA[>=]]> #{start} AND rowNum <![CDATA[<=]]> #{end}
+	</select>
+	
+	<select id="memoPageBar" resultType="java.util.HashMap" resultMap="barResult" parameterType="String">
+		SELECT COUNT(*) AS total, CEIL(COUNT(*) / 10) AS pages FROM memo WHERE memseq = #{receivememseq};
+	</select>
+	
+	<insert id="writeMemo" parameterType="java.util.HashMap">
+		INSERT INTO memo VALUES (null, #{memseq}, #{content})
+	</insert>
+	
+	<delete id="deleteMemo" parameterType="String">
+		DELETE FROM memo WHERE memoid = #{memoid}
+	</delete>
+	
+	<resultMap type="java.util.HashMap" id="barResult">
+		<result property="pages" column="pages" javaType="Integer"/>
+		<result property="total" column="total" javaType="Integer"/>
+	</resultMap>
+</mapper>
+
+
+
+
+
+
+
+
+

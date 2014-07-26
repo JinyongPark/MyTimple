@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC
+"-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+
+
+
+<mapper namespace="teamMain">
+	
+	<!-- 1. 업무 리스트 페이지 -->
+	
+	<!-- 업무목록 - 시작날짜, 끝날짜, 제목, 중요도, 이름, 진행상태, 번호 -->
+	<select id="printList" parameterType="String" resultType="visang.timple.model.TeamMainDTO">
+		select b.startday, b.endday, b.subject, b.importance, m.name, bs.status, b.businessid from member m
+			inner join team t on m.memberId = t.memseq 
+				inner join teambp tp on t.teamid = tp.teamseq 
+					inner join teambusiness tb on tp.teambpid = tb.teambpseq
+						inner join business b on tb.businessseq = b.businessid 
+							inner join businesslog bl on b.businessid = bl.businessseq 
+								inner join businesstatus bs on bl.businesstatussseq = bs.businesstatusid
+									where b.bpseq = #{bpId};
+	</select>	
+	
+	<!-- BP이름 찾기 (BP번호로) -->
+	<select id="BPNamebyBP" parameterType="String" resultType="String">
+		select name from bp where bpid = #{bpid}
+	</select>
+	
+	<!-- 2. 업무 디테일 페이지 -->	
+	
+	<!-- 업무 디테일 목록 -->
+	<select id="businessDetail" parameterType="String" resultType="visang.timple.model.TeamBusinessDTO">
+		select b.subject, b.startday, b.endday, m.name, b.importance, bs.status, bl.editdate, b.content from member m
+	inner join team t on m.memberId = t.memseq 
+		inner join teambp tp on t.teamid = tp.teamseq 
+			inner join teambusiness tb on tp.teambpid = tb.teambpseq
+				inner join business b on tb.businessseq = b.businessid 
+					inner join businesslog bl on b.businessid = bl.businessseq 
+						inner join businesstatus bs on bl.businesstatussseq = bs.businesstatusid
+							where b.businessid = #{businessid};
+	</select>	
+		
+	<!-- 파일 목록 -->	
+	<select id="businessDataList" parameterType="String" resultType="visang.timple.model.TeamBusinessDataDTO">
+		select orgfilename, filename from businessdata where businessseq = #{businessid}
+	</select>
+	
+	<!-- BP이름 찾기 (업무번호로) -->
+	<select id="BPNamebyBusiness" parameterType="String" resultType="String">
+		select p.name from business b inner join bp p on b.bpseq = p.bpid where b.businessid = #{businessid}
+	</select>
+	
+	<!-- 3. 업무 등록 페이지(뷰) -->
+		
+	<!-- 상태. 종류별로 가져오기-->
+	<select id="statusSelector" resultType="visang.timple.model.BusinessStatusDTO">
+		select businesstatusid, status from businesstatus
+	</select>	
+	
+	<!-- BP원 리스트 받아오기 -->
+	<select id="searchBpMem" parameterType="String" resultType="visang.timple.model.BpMemListDTO">
+		select t.teamid as teamid, m.name as name, m.memberId as memberid from member m
+			inner join team t on m.memberId = t.memseq
+				inner join teambp tb on t.teamid = tb.teamseq where tb.bpseq = #{bpId}
+	</select>
+	
+	<!-- 팀장 확인 -->
+	<select id="rankConfirm" parameterType="String" resultType="String">
+		select m.memberId as memeberid from member m
+			inner join team t on m.memberId = t.memseq
+				inner join teambp tb on t.teamid = tb.teamseq where tb.bpseq = #{bpId} and (tb.grade = 1 or t.grade = 1);
+	</select>	
+	
+	<!-- 회원번호를 팀원번호로 교체 --> 
+	<select id="getTeamSeq" parameterType="java.util.HashMap" resultType="String">
+		select distinct(t.teamid) from member m
+	inner join team t on m.memberId = t.memseq 
+		inner join teambp tb on t.teamid = tb.teamseq where m.memberId = #{loginSeq} and tb.bpseq = #{bpId};
+	</select>
+	
+	<!-- 4. 업무 등록 페이지(처리) -->	
+	
+	<!-- 업무 등록하기 -->
+	<insert id="addBusiness1" parameterType="java.util.HashMap">
+		insert into business values (null, #{bpId}, #{businessSubject}, #{businessTextarea}, #{selImportance}, #{startDayCalendar}, #{endDayCalendar})
+	</insert>
+	
+	<!-- 등록한 업무번호 받아오기 -->
+	<select id="addBusiness2" resultType="String">
+		select businessid from(select @num:=@num+1 num, businessid from (select @num:=0)a, business order by businessid desc)b where num=1
+	</select>
+	
+	<!-- 업무담당자 등록하기 -->
+	<insert id="addBusiness3" parameterType="java.util.HashMap">
+		insert into teambusiness values (null,#{businessid},(select teambpid from teambp where bpseq = #{bpId} and teamseq = #{chargePersonId}));
+	</insert>
+	
+	<!-- 업무로그 남기기 -->
+	<insert id="addBusiness4" parameterType="java.util.HashMap">
+		insert into businesslog values (null, #{businessid}, #{selStatus}, sysdate());
+	</insert>
+	
+	<!-- 5. 업무 삭제 페이지 -->
+		
+	<!-- 자료 삭제 -->
+	<delete id="deleteBusiness1">
+		delete from businessdata where businessseq = #{businessid}
+	</delete>
+	
+	<!-- 댓글 삭제 -->
+	<delete id="deleteBusiness2">
+		delete from businesscomment where businessseq = #{businessid}
+	</delete>
+	
+	<!-- 로그 삭제 -->
+	<delete id="deleteBusiness3">
+		delete from businesslog where businessseq = #{businessid}
+	</delete>
+	
+	<!-- 담당자 삭제 -->
+	<delete id="deleteBusiness4">
+		delete from teambusiness where businessseq = #{businessid}
+	</delete>
+	
+	<!-- 업무 삭제 -->	
+	<delete id="deleteBusiness5">
+		delete from business where businessid = #{businessid}
+	</delete>	
+	
+	<!-- 6. 업무 수정 페이지 -->
+	
+	<!-- 2번의 파일 목록 재 사용 -->	
+	<!-- 2번의 BP이름 찾기 재 사용 -->
+	<!-- 3번 상태. 종류별 찾아오기 재 사용 -->
+	<!-- 2번의 BP번호 찾기 재 사용 -->	
+	
+	<!-- BpId 구하기 -->
+	<select id="findBpid" parameterType="String" resultType="String">
+		select bpseq from business where businessid = #{businessid}
+	</select>
+	
+	<!-- 업무 수정하기 -->
+	<update id="editBusiness1" parameterType="java.util.HashMap">
+		update teambusiness tb
+			inner join business b on tb.businessseq = b.businessid 
+				inner join businesslog bl on b.businessid = bl.businesslogid 
+	set b.subject = #{businessSubject}, b.startday = #{editPeriodStart}, b.endday = #{editPeriodEnd}, b.importance = #{selImportance},
+	 	b.content = #{businessEditText}, bl.businesstatussseq = #{editState}, tb.teambpseq = (select teambpid from teambp where teamseq = #{chargePersonId} and bpseq = #{BPId}) 
+			where b.businessid = #{businessid};
+	</update>			
+	
+	<!-- 파일 삭제 -->
+	<delete id="deleteBusinessFile" parameterType="String">
+		delete from businessdata where filename = #{fileName}
+	</delete>	
+	
+	<!-- 알람기능 구현 -->
+	<insert id="addAlarm">
+		insert into notification values (null, #{loginId}, #{subjectContence}, 'n')
+	</insert>
+	
+	<!-- 회원번호, 업무번호로 팀원번호 찾기 -->
+	<select id="findTeamSeq" parameterType="java.util.HashMap" resultType="String">
+		select distinct(t.teamid) from member m
+			inner join team t on m.memberId = t.memseq
+				inner join teambp tp on t.teamid = tp.teamseq
+					inner join teambusiness tb on tp.teambpid = tb.teambpseq
+						inner join business b on tb.businessseq = b.businessid
+							where m.memberId = #{loginSeq} and tp.bpseq = #{bpid}
+	</select>
+	
+	<!-- 업무댓글 입력 -->
+	<insert id="insertBusinessComment">
+		insert into businesscomment values (null, #{businessid}, #{teamid}, #{businessCommentTextarea})
+	</insert>
+	
+	<!-- 업무댓글 가져오기 -->
+	<select id="commentList" parameterType="String" resultType="visang.timple.model.BusinessCommentListDTO">
+		 select bc.businesscommentid,(select m.name from member m inner join team t on m.memberId = t.memseq where t.teamid = bc.teamseq) as name, bc.content from member m
+			inner join team t on m.memberId = t.memseq
+				inner join teambp tp on t.teamid = tp.teamseq
+					inner join teambusiness tb on tp.teambpid = tb.teambpseq
+						inner join business b on tb.businessseq = b.businessid
+							inner join businesscomment bc on b.businessid = bc.businessseq where bc.businessseq = #{businessid};
+	</select>
+
+	<!-- 댓글 삭제 -->
+	<delete id="deleteBusinessComment">
+		delete from businesscomment where businesscommentid = #{businesscommentid}
+	</delete>
+</mapper>
