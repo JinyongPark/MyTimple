@@ -12,6 +12,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
 import visang.timple.interfaces.IBoardAdd;
 import visang.timple.interfaces.IBp;
@@ -60,8 +61,8 @@ public class ProjectController {
 	 
 
 	@RequestMapping(method = { RequestMethod.GET }, value = "/projects/ProjectAdd.vs")
-	public String add(HttpServletRequest request, HttpSession session) {
- 
+	public String add(HttpServletRequest request, HttpSession session) {		
+		
 		String mname = session.getAttribute("loginName").toString();
 
 		ArrayList<Object> one = jdao.one();
@@ -72,9 +73,10 @@ public class ProjectController {
 
 		request.setAttribute("one", one);
 		request.setAttribute("two", two);
-		request.setAttribute("mname", mname);
-
+		request.setAttribute("mname", mname);	
+		
 		return "/projects/ProjectAdd.jsp";
+		
 	}
 
 	@RequestMapping(method = { RequestMethod.POST }, value = "/projects/ProjectAddOk.vs")
@@ -95,24 +97,31 @@ public class ProjectController {
 		dto.setEndday(String.format("%s-%s-%s", temp1[2], temp1[0], temp1[1]));
 		
 		
+		// 저장경로 만들기(*****) //TODO 저장경로 서버로 가져가기!
 		String root = session.getServletContext().getRealPath("/");
 		String path = root + "files"; //경로 (저장서버 진호 알아보는중)
-		//System.out.println(path);   
+		System.out.println("이미지파일 저장경로 : " + path);   
 		
 		//저장할 파일명
 		String newFileName = "";
 		
 		//첨부파일이 있는지?		
 		if (!dto.getAttach().isEmpty()) {
-			//첨부파일을 서버에 저장하기
+			
+			//첨부파일을 서버에 저장하기(*****) - 바이트로 쪼개서 저장.getBytes().
 			byte[] bytes = null;
 			try {
-				bytes = dto.getAttach().getBytes();
+				bytes = dto.getAttach().getBytes(); 
+				
+				// attach는 MultipartFile 클래스 변수 
+				
 				//실제 파일 저장 & 저장 파일명 반환
 				newFileName = fileManager.doFileUpload(bytes, dto.getAttach().getOriginalFilename(), path);
-				//방금 저장한 파일을 dto에 옮겨 담기
+				
+				//방금 저장한 파일을 (dto에 옮겨 담기)
 				dto.setOrgFileName((dto.getAttach().getOriginalFilename()));    //(dto.getAttach().getOriginalFilename());//X
 				dto.setThumnail(newFileName);//***저장되는 파일명
+				
 			} catch (Exception e) {
 				System.out.println(e);
 			}
@@ -128,9 +137,7 @@ public class ProjectController {
 			// 팀장 등록하기
 			tdao.add(tdto, seq, mseq);
 
-			session.setAttribute("pseq", seq);
-
-		
+			session.setAttribute("pseq", seq); 		
 		
 		return "/projects/ProjectAddOk.jsp";
 	}

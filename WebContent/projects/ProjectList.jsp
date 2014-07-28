@@ -156,7 +156,7 @@
                 <c:set var="distinct" value="1" />
                 
 				<li>
-					<p><img src="/files/${dto.thumnail}" /></p>
+					<p><img src="http://localhost:8090/files/${dto.thumnail}" /></p>
 				    <p class="ttl">${dto.projectname}</p>
 				    <c:set var="ctn" value="${dto.content}" />
 				    <c:set var="leng" value="${fn:length(ctn)}" />
